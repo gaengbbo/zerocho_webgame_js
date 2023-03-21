@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>가위바위보</title>
+  <style>
+    #computer {
+      width: 142px;
+      height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div id="computer"></div>
+  <div>
+    <button id="scissors" class="btn">가위</button>
+    <button id="rock" class="btn">바위</button>
+    <button id="paper" class="btn">보</button>
+  </div>
+  <div id="score">0</div>
+  <script>
+    const $computer = document.querySelector('#computer');
+    const $scissors = document.querySelector('#scissors');
+    const $rock = document.querySelector('#rock');
+    const $paper = document.querySelector('#paper');
+    const $score = document.querySelector('#score');
+
+    const IMG_URL = './rsp.png';
+    $computer.style.background = `url(${IMG_URL}) 0 0`;
+    $computer.style.backgroundSize = 'auto 200px';
+
+    const rspX = {
+      scissors: '0',
+      rock: '-220px',
+      paper: '-440px',
+    };
+
+    let computerChoise = 'scissors';
+
+    const changeComputerHand = () => {
+      if (computerChoise === 'scissors') {
+        computerChoise = 'rock';
+       
+      } else if ( computerChoise === 'rock') {
+        computerChoise = 'paper';
+      
+      } else {
+        computerChoise = 'scissors';
+        
+      }
+      $computer.style.background = `url(${IMG_URL}) ${rspX[computerChoise]} 0`;
+      $computer.style.backgroundSize = 'auto 200px';
+    }
+
+    let intervlaId = setInterval(changeComputerHand, 50);
+
+    
+    
+
+    
+
+    const scoreTable = {
+      rock: 0,
+      scissors: 1,
+      paper: -1,
+    };
+
+    let me = 0;
+    let computer = 0;
+
+    let clickable = true;
+    const clickButton = () => {
+      if (clickable) {
+        clearInterval(intervlaId);
+        clickable = false;
+
+        const myChoice = event.target.id;
+        const myScore = scoreTable[myChoice];
+        const computerScore = scoreTable[computerChoise];
+        const diff = myScore - computerScore;
+
+
+        if(diff === 2 || diff === -1) {
+          me += 1;
+          message = '승리';
+        } else if (diff === -2 || diff === 1) {
+          computer += 1;
+          message = '패배';
+        } else {
+          message= '무승부';
+        }
+
+        if ( me === 3) {
+          $score.textContent = `나의 승리 ${me} : ${computer}`;
+        } else if ( computer === 3 ) {
+          $score.textContent = `컴퓨터의 승리 ${me} : ${computer}`;
+        } else {
+        $score.textContent = `${message} ${me}  : ${computer}`;
+        setTimeout(() => {
+          clickable = true;
+          intervlaId = setInterval(changeComputerHand, 50);
+        }, 1000);
+        
+        }
+      }
+    }
+
+
+   //버그 수정 코드 (이벤트를 지우는건 위험할 수 있어서 위의 방법으로 진행) 
+   /* const clickButton = () => {
+      clearInterval(intervlaId);
+
+      setTimeout(() => {
+        clearInterval(intervlaId)
+        intervlaId = setInterval(changeComputerHand, 50);
+      }, 1000);
+    }; */
+
+    $rock.addEventListener('click', clickButton);
+    $scissors.addEventListener('click', clickButton);
+    $paper.addEventListener('click', clickButton);
+
+
+
+
+
+  </script>
+</body>
+</html>

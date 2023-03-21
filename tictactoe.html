@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>틱택토</title>
+  <style>
+    table {
+      border-collapse : collapse;
+    }
+
+    td {
+      border: 1px solid black;
+      width: 40px;
+      height: 40px;
+      text-align: center;
+    }
+
+  </style>
+</head>
+<body>
+<script>
+  const { body } = document;
+  
+  const $table = document.createElement('table');
+  const $result = document.createElement('div');
+  const rows = [];
+  let turn = 'O';
+  
+  /* 첫번재 방법 
+  const data = [];
+  for ( let i = 0; i < 3; i++) {
+    data.push([]);
+  } */
+
+  const checkWinner = (target) => {
+    const rowIndex = target.parentNode.rowIndex;
+    const cellIndex = target.cellIndex;
+   
+   
+   /* forEach로 셀을 돌면서 셀인덱스 찾기 
+    rows.forEach((row, ri) => {
+      row.forEach((cell, ci) => {
+        if ( cell === target ) {
+          rowIndex = ri;
+          cellIndex = ci;
+        }
+      });
+    }); */ 
+  
+
+    let hasWinner = false;
+
+    if (
+      rows[rowIndex][0].textContent === turn &&
+      rows[rowIndex][1].textContent === turn &&
+      rows[rowIndex][2].textContent === turn
+    ) {
+      hasWinner = true;
+    }
+
+    if (
+      rows[0][cellIndex].textContent === turn &&
+      rows[1][cellIndex].textContent === turn &&
+      rows[2][cellIndex].textContent === turn 
+    ) {
+      hasWinner = true;
+    }
+
+    if (
+      rows[0][0].textContent === turn &&
+      rows[1][1].textContent === turn &&
+      rows[2][2].textContent === turn 
+    ) {
+      hasWinner = true;
+    }
+
+    if (
+      rows[0][2].textContent === turn &&
+      rows[1][1].textContent === turn &&
+      rows[2][0].textContent === turn
+    ) {
+      hasWinner = true;
+    }
+    return hasWinner;
+  };
+
+  const checkWinnerAndDraw = (target) => {
+    const hasWinner = checkWinner(target);
+
+    if (hasWinner) {
+      $result.textContent = `${turn}님의 승리!`;
+      $table.removeEventListener('click', callback);
+      return;
+    }
+
+    const draw = rows.flat().every((cell) => cell.textContent);
+    if(draw) {
+      $result.textContent = '무승부';
+      return;
+    }
+    turn = (turn === 'X' ? 'O':'X');
+  };
+
+
+  let clickable = true;
+
+  const callback = (event) => {
+    if(!clickable) return;
+    if (event.target.textContent !== '') {
+      console.log('빈칸이 아닙니다');
+      return;
+    }
+    
+    event.target.textContent = turn;
+    const hasWinner = checkWinner(event.target);
+    if (hasWinner) {
+      $result.textContent = `${turn}님이 승리!`;
+      $table.removeEventListener('click', callback);
+      return;
+    } 
+    let draw = true;
+  
+
+    /* rows.flat().every((cell)=>{cell.context}) 
+    -  forEach의경우 false값이 확인이 되어도 모든 배열을 돌아야해 비효율적이다. 
+    every는 모두 참이어야 참인 값을 반환하는 메서드로 하나라도 false가 확인되면
+    바로 false반환 ** every는 1차배열에서만 사용가능하다 
+    2차 배열을 1차배열로 변경해주는 flat과 함께 사용 가능! some은 every와 반대로
+    하나만 true라도 true */
+
+    rows.forEach((row) => {
+      row.forEach((cell)=> {
+        if (!cell.textContent) {
+          draw = false;
+        }
+      });
+    });
+    if (draw) {
+      $result.textContent = '무승부';
+      return;
+    }
+    turn = ( turn === 'O' ? 'X': 'O' );
+    /*
+    if ( turn === 'O' ) {
+      turn = 'X';
+    } else if ( turn === 'X' );
+      turn = 'O';
+    */  
+
+    
+
+   if (turn === 'X') {
+    clickable = false;
+    setTimeout(() => {
+    const emptyCells = rows.flat().filter((v)=>!v.textContent);
+    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    randomCell.textContent = 'X';
+    checkWinnerAndDraw(event.target);
+    clickable = true;
+   },1000)
+  };
+  }
+
+  for (let i = 0; i < 3; i++) {
+    const $tr = document.createElement('tr');
+    $table.append($tr);
+    const cells = [];
+    rows.push(cells);
+    for(let j = 0; j < 3; j++) {
+      const $td = document.createElement('td');
+      cells.push($td);
+      $tr.appendChild($td);
+      //$td.addEventListener('click', callback);
+      }
+    }
+  $table.addEventListener('click', callback);
+  body.append($table);
+  body.append($result);
+
+</script>  
+</body>
+</html>

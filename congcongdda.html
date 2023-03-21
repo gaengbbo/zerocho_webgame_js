@@ -1,0 +1,60 @@
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쿵쿵따</title>
+</head>
+<body>
+  <div><span id="order">1</span>번째 참가자 / 총 <sapn id="totalOrder"></sapn>명의 참가자 </div>
+  <div>제시어 : <span id="targetWord"></span></div>
+  <input type="text">
+  <button>쿵쿵따</button>
+
+  <script>
+    let startWord;
+    let newWord;
+
+
+    const entry = prompt('참가자는 몇 명입니까?');
+    
+    const targetWord = document.querySelector('#targetWord');
+    const totalOrder = document.querySelector('#totalOrder');
+    const button = document.querySelector('button');
+    const target = document.querySelector('input');
+    const $order = document.querySelector('#order');
+
+    totalOrder.textContent = entry;
+
+    
+  
+    const onClickBtn = () => {
+      if(!startWord || (startWord[startWord.length] - 1 === newWord[0] && newWord.length === 3)) { 
+        startWord = newWord;
+        targetWord.textContent = startWord;
+        target.value = ' ';
+        const order = Number($order.textContent);
+        if(order + 1 > totalOrder) {
+          $order.textContent = 1;
+        } else {
+          $order.textContent = order + 1;
+        }
+      } else { 
+        alert ('올바른 단어가 아닙니다.')
+
+      }
+    }
+
+    
+    const onTarget = (event) => {
+      newWord = event.target.value;
+    }
+
+    button.addEventListener('click', onClickBtn);
+    target.addEventListener('input', onTarget);
+
+  </script>
+
+
+</body>
+</html>

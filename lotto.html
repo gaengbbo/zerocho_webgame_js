@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로또추첨기</title>
+  <style>
+    .ball {
+      display: inline-block;
+      border: 1px solid black;
+      border-radius: 20px;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      font-size: 20px;
+      text-align: center;
+      margin-right: 20px;
+    }
+
+    #result, #bonus {
+      font-size: 20px;
+      line-height: 40px;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="result">추첨결과는 ?</div>
+  <div id="bonus">보너스는 ?</div>
+<script>
+  const candidate = Array(45).fill().map((v,i) => i + 1);
+  const shuffle = [];
+  while (candidate.length > 0 ) {
+    const random = Math.floor(Math.random() * candidate.length);
+    const spliceArray = candidate.splice(random, 1);
+    const value = spliceArray [0];
+    shuffle.push(value);
+  }
+
+  console.log(shuffle);
+
+ const winBalls = shuffle.slice(0, 6).sort((a,b) => a-b);
+ const bonus = shuffle[6];
+
+ const colorize = (number, $tag) => {
+    if ( number < 10 ) {
+      $tag.style.backgroundColor = 'red';
+      $tag.style.color = 'white';
+    } else if ( number < 20 ) { 
+      $tag.style.backgroundColor = 'orange';
+      $tag.style.color = 'black';
+    } else if ( number < 30 ) {
+      $tag.style.backgroundColor = 'yellow';
+      $tag.style.color = 'black';
+    } else if ( number < 40 ) {
+      $tag.style.backgroundColor = 'green';
+      $tag.style.color = 'white';
+    } else {
+      $tag.style.backgroundColor = 'blue';
+      $tag.style.color = 'white';
+    }
+ }
+
+ const $result = document.querySelector('#result');
+ const $bonus = document.querySelector('#bonus');
+
+ const showBall = function (number, $target) {
+  const $ball = document.createElement('div')
+  $ball.classList = 'ball';
+  $ball.textContent = number;
+  $target.appendChild($ball);
+  colorize(number, $ball)
+ }
+
+  for ( let i = 0; i < winBalls.length + 1; i++) {
+    if ( i < 6) {
+      setTimeout( () => {
+      showBall(winBalls[i], $result);
+      }, 1000 * (i + 1))
+    } else { 
+      setTimeout( () => {
+      showBall(bonus, $bonus);
+      }, 1000 * (winBalls.length + 1))
+    };
+  
+  }
+
+
+
+</script>
+  
+</body>
+</html>
