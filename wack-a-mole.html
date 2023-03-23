@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>두더지 잡기</title>
+  <style>
+    .cell {
+      display: inline-block;
+      position: relative;
+      width: 200px;
+      height: 200px;
+      background-color: 'yellow';
+      overflow: hidden;
+    }
+
+    .gopher, .bomb {
+      width: 200px; 
+      height: 200px;
+      position: absolute;
+      bottom: 0;
+      transition: bottom 1s;
+    }
+
+    .gopher {
+      background: url(./image/gopher.png) center center no-repeat;
+      background-size: 200px 200px;
+    }
+
+    .dead {
+      background: url(./image/dead_gopher.png) center center no-repeat;
+      background-size: 200px 200px;
+    }
+
+    .bomb {
+      background: url(./image/bomb.png) center center no-repeat;
+      background-size: 200px 200px;
+    }
+
+    .boom {
+      background: url(./image/explode.png) center center no-repeat;
+      background-size: 200px 200px;
+    }
+
+    .hidden {
+      bottom: -200px;
+    }
+
+    .hole {
+      width: 200px;
+      height: 150px;
+      position: absolute;
+      bottom: 0;
+      background: url(./image/mole-hole.png) center center no-repeat;
+      background-size: 200px 150px;
+    }
+
+    .hole-front {
+      width: 200px;
+      height: 30px;
+      position: absolute;
+      bottom: 0;
+      background: url(./image/mole-hole-front.png) center center no-repeat;
+      background-size: 200px 30px;
+    }
+
+  </style>
+</head>
+<body>
+  <span id="timer">8</span>초&nbsp;
+  <span id="score">0</span>점
+  <button id="start">시작</button>
+  <div id="game">
+    <div id="row">
+      <div class="cell">
+        <div class="hole"></div>
+        <div class="gopher hidden"></div>
+        <div class="bomb hidden"></div>
+        <div class="hole-front"></div>
+      </div>
+      <div class="cell">
+        <div class="hole"></div>
+        <div class="gopher hidden"></div>
+        <div class="bomb hidden"></div>
+        <div class="hole-front"></div>
+      </div>
+      <div class="cell">
+        <div class="hole"></div>
+        <div class="gopher hidden"></div>
+        <div class="bomb hidden"></div>
+        <div class="hole-front"></div>
+      </div>
+    </div>
+    <div id="row">
+      <div class="cell">
+        <div class="hole"></div>
+        <div class="gopher hidden"></div>
+        <div class="bomb hidden"></div>
+        <div class="hole-front"></div>
+      </div>
+      <div class="cell">
+        <div class="hole"></div>
+        <div class="gopher hidden"></div>
+        <div class="bomb hidden"></div>
+        <div class="hole-front"></div>
+      </div>
+      <div class="cell">
+        <div class="hole"></div>
+        <div class="gopher hidden"></div>
+        <div class="bomb hidden"></div>
+        <div class="hole-front"></div>
+      </div>
+   </div>
+   <div id="row">
+    <div class="cell">
+      <div class="hole"></div>
+      <div class="gopher hidden"></div>
+      <div class="bomb hidden"></div>
+      <div class="hole-front"></div>
+    </div>
+    <div class="cell">
+      <div class="hole"></div>
+      <div class="gopher hidden"></div>
+      <div class="bomb hidden"></div>
+      <div class="hole-front"></div>
+    </div>
+    <div class="cell">
+      <div class="hole"></div>
+      <div class="gopher hidden"></div>
+      <div class="bomb hidden"></div>
+      <div class="hole-front"></div>
+    </div>
+  </div>
+
+  <script>
+    const $timer = document.querySelector('#timer');
+    const $score = document.querySelector('#score');
+    const $start = document.querySelector('#start');
+    const $game = document.querySelector('#game');
+    const $$cells = document.querySelectorAll('.cell')
+
+    const holes = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let started = false;
+    let score = 0;
+    let setTime = 60;
+    let life = 5;
+
+    $timer.textContent = setTime;
+
+    $start.addEventListener('click', () => {
+      if (started) return;
+      started = true; 
+      console.log('시작');
+      const timerID = setInterval(() => {
+        //컴퓨터는 소수점 계산에 문제가 있을수 있으므로 정수로 처리해주기 위해서
+        setTime = (setTime * 10 - 1) / 10; 
+        $timer.textContent = setTime;
+        if ( setTime === 0) {
+          setTimeout(() => {
+            clearInterval(timerID);
+            clearInterval(tickId);
+            //alert사용할때는 마지막 코드가 안그려지는 경우가있기때문에 settimeout을 이용해 마지막 코드까지 실행될 수 있도록
+            //setTimeout 안해주면 종료시 초가 0.1초로 보여진다.
+            alert(`게임이 종료! 점수는 ${score}점`);
+          }, 50);
+        }
+      }, 100);
+      //tick은 게임 제약상 1초 여야한다. 
+      const tickId = setInterval(tick, 1000);
+      tick();
+    })
+
+    //누적 확률 
+    let gopherPercent = 0.3;
+    let bombPercent = 0.5;
+
+    //비동기로 인해 코드 순서가 달라지니 숙지!
+    function tick () {
+      holes.forEach((hole, index) => {
+        if (hole) return;
+        const randomValue = Math.random();
+        if ( randomValue < gopherPercent) {
+          const $gopher = $$cells[index].querySelector('.gopher');
+          //setTimeout의 return값은 타이머Id이다. 타이머ID를 저장해 주는 이유는 나중에 취소할때 필요해서
+        //hole이 아닌 holes에 넣는 이유는 hole은 참조관계가 아니라서 
+        holes[index] = setTimeout(() => {
+          $gopher.classList.add('hidden');
+          holes[index] = 0;
+        }, 1000);
+        $gopher.classList.remove('hidden');
+        } else if (randomValue < bombPercent) {
+          const $bomb = $$cells[index].querySelector('.bomb');
+          holes[index] = setTimeout (() => {
+            $bomb.classList.add('hidden');
+            holes[index] = 0;
+          }, 1000);
+          $bomb.classList.remove('hidden')
+        }
+      })
+    }
+
+    $$cells.forEach(($cell, index) => {
+      $cell.querySelector('.gopher').addEventListener('click', (event) => {
+        if (!event.target.classList.contains('dead')) {
+        score += 1;
+        $score.textContent = score;
+        }
+        event.target.classList.add('dead');
+        event.target.classList.add('hidden');
+        clearTimeout(holes[index]);
+        setTimeout(() => {
+          holes[index] = 0;
+          event.target.classList.remove('dead');
+        }, 1000);
+      });
+      $cell.querySelector('.bomb').addEventListener('click', (event) => {
+        event.target.classList.add('boom');
+        event.target.classList.add('hidden');
+        clearTimeout(holes[index]);
+        setTimeout(()=>{
+          holes[index] = 0;
+          event.target.classList.remove('boom');
+        }, 1000);
+
+      })
+    }) 
+
+  </script>
+</body>
+</html>
